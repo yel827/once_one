@@ -325,6 +325,7 @@ export default {
         )
         .then(res => {
           this.tableData = res.data.list;
+          this.total=res.data.count;
           
           
           console.log(res, "search");

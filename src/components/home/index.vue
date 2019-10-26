@@ -5,10 +5,10 @@
     <div class="search">
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="租户名称">
-          <el-input v-model="tableDataName" placeholder="租户名称"></el-input>
+          <el-input v-model="tableDataName" placeholder="租户名称"  clearable></el-input>
         </el-form-item>
         <el-form-item label="授权码">
-          <el-input v-model="tableDataValue" placeholder="授权码"></el-input>
+          <el-input v-model="tableDataValue" placeholder="授权码"  clearable></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="doFilter">搜索</el-button>
@@ -17,7 +17,7 @@
           <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
             <el-row>
               租户名称
-              <el-input v-model="productName" style="width: 70%;margin: 10px 0 10px 0"></el-input>
+              <el-input v-model="productName" style="width: 70%;margin: 10px 0 10px 0"  clearable></el-input>
             </el-row>
             <el-row>
               授权能力
@@ -27,6 +27,7 @@
                   :key="item.ID"
                   :label="item.abilityName"
                   :value="item.ID"
+
                 ></el-option>
               </el-select>
             </el-row>

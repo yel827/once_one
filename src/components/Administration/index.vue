@@ -4,7 +4,7 @@
     <div class="search">
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="授权码">
-          <el-input v-model="tableDataValue" placeholder="授权码"></el-input>
+          <el-input v-model="tableDataValue" placeholder="授权码"  clearable></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="doFilter">搜索</el-button>

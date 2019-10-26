@@ -4,11 +4,11 @@
     <div class="search">
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="租户名称" class="right">
-          <el-input v-model="formInline.same" placeholder="租户名称"></el-input>
+          <el-input v-model="formInline.same" placeholder="租户名称"  clearable></el-input>
         </el-form-item>
 
         <span class="demonstration">日志等级</span>
-        <el-select v-model="value" filterable placeholder="请选择" class="right">
+        <el-select v-model="value" filterable placeholder="请选择" class="right" clearable>
           <el-option
             v-for="item in options"
             :key="item.label"
@@ -18,7 +18,7 @@
         </el-select>
 
         <el-form-item label="来源IP" class="right">
-          <el-input v-model="formInline.name" placeholder="来源IP"></el-input>
+          <el-input v-model="formInline.name" placeholder="来源IP"  clearable></el-input>
         </el-form-item>
         <span class="demonstration">时间选择</span>
         <el-date-picker

@@ -7,7 +7,7 @@
         <!-- 租户名称 -->
         <span class="demonstration">租户名称</span>
         <!-- 下拉框组件一挂载就掉 -->
-        <el-select v-model="formData.tenantName" placeholder="租户名称" class="right">
+        <el-select v-model="formData.tenantName" placeholder="租户名称" class="right" clearable>
           <el-option
             v-for="item in tenantNameOptions"
             :key="item.tenantID"
@@ -16,12 +16,12 @@
         </el-select>
         <!-- 日志等级 -->
         <span class="demonstration">日志等级</span>
-        <el-select v-model="formData.level" filterable placeholder="日志等级" class="right">
+        <el-select v-model="formData.level" filterable placeholder="日志等级" class="right" clearable>
           <el-option v-for="item in journalLevel" :key="item.level" :value="item.level"></el-option>
         </el-select>
         <!-- 来源IP -->
         <el-form-item label="来源IP" class="right">
-          <el-input v-model="formData.IP" placeholder="来源IP"></el-input>
+          <el-input v-model="formData.IP" placeholder="来源IP" clearable></el-input>
         </el-form-item>
         <!-- 时间选择 -->
         <span class="demonstration">时间选择</span>
@@ -35,6 +35,7 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           :picker-options="pickerOptions"
+          clearable
         ></el-date-picker>
         <!-- 搜索/导出当前 按钮 -->
         <el-form-item>
@@ -52,10 +53,10 @@
       <el-table-column prop="logID" label="日志ID" width="180"></el-table-column>
       <el-table-column prop="tenantName" label="租户名" width="180"></el-table-column>
       <el-table-column prop="level" label="日志等级"></el-table-column>
-      <el-table-column prop="source" label="来源IP"></el-table-column>
+      <el-table-column prop="source" show-overflow-tooltip label="来源IP"></el-table-column>
       <el-table-column prop="responseTime" label="调用时长"></el-table-column>
       <el-table-column prop="logType" label="日志类型"></el-table-column>
-      <el-table-column show-overflow-tooltip prop="msg" label="日志内容"></el-table-column>
+      <el-table-column :show-overflow-tooltip="true" prop="msg" label="日志内容" width="300px"></el-table-column>
       <!-- 造作column -->
       <el-table-column label="操作">
         <template slot-scope="scope">
@@ -282,8 +283,8 @@ export default {
     },
     //调用搜索接口
     onSubmit() {
-      let { tenantName, level, IP, selectTime } = this.formData;
-      if(!(tenantName || level || IP || selectTime.length))return;
+      let { tenantName, level, IP, selectTime } = this.formData
+      // if(!(tenantName || level || IP || selectTime.length))return;
       let formData = {};
       tenantName && (formData.tenantName = tenantName);
       level && (formData.level = level);
@@ -291,11 +292,13 @@ export default {
       selectTime.length &&
         ((formData.startTime = this.dateTransfer(selectTime[0])),
         (formData.endTime = this.dateTransfer(selectTime[1])));
+        console.log(this,'this')
       this.pagination = {
         start: 1,
         pageSize: 6,
         total: 0
       };
+      
       Object.keys(this.pagination).forEach(
         item => (formData[item] = this.pagination[item])
       );
@@ -370,7 +373,7 @@ export default {
         .catch(err => console.log("queryJouralList_error", err));
       //this.getJournalOverview();
     },
-    // 调取获取租户名称接口//-----------------------------------------------------------------------
+    // 调取获取租户名称接口
     queryTenantName(obj) {
       this.$axios
         .post(
@@ -408,12 +411,28 @@ export default {
     },
     // 导出接口
     exportCurrent() {
+      let data = {};
+      if(this.formData.tenantName){
+       data.tenantName = this.formData.tenantName;
+       console.log(data.tenantName,'data.tenantName')
+      };
+      if(this.formData.level){
+        data.level = this.formData.level;
+      };
+      if(this.formData.IP){
+        data.Ip = this.formData.IP
+      };
+      if(this.formData.selectTime){
+        data.selectTime = this.formData.selectTime
+        console.log(data.selectTime,'data.selectTime')
+      };
       this.$axios
-        .post("/oms-basic/abilityLog!exportLogMessage.json")
+        .post("/oms-basic/abilityLog!exportLogMessage.json",this.$qs.stringify(data))
         .then(res => {
-          console.log(res.data.address, "res123456");
+          console.log(res.data.address, "res123456"); 
           window.open(
-            "http://192.168.1.203:28084/oms-basic" + res.data.address
+            `/oms-basic` + res.data.address
+            // 192.168.1.203:28082/oms-basic/depository/export/日志信息表(2019-10-25-8f75).xls
           );
         });
     },
@@ -462,7 +481,11 @@ export default {
   }
 };
 </script>
-
+<style>
+.el-tooltip__popper {
+  max-width: 210px !important;
+}
+</style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .home {

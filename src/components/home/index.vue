@@ -12,10 +12,10 @@
         class="demo-ruleForm"
       >
         <el-form-item label="租户名称">
-          <el-input v-model="tableDataName" placeholder="租户名称"></el-input>
+          <el-input v-model="tableDataName" placeholder="租户名称"  clearable></el-input>
         </el-form-item>
         <el-form-item label="授权码">
-          <el-input v-model="tableDataValue" placeholder="授权码"></el-input>
+          <el-input v-model="tableDataValue" placeholder="授权码"  clearable></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="doFilter">搜索</el-button>
@@ -23,15 +23,16 @@
           <!--  -->
           <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
             <el-form-item label="租户名称" prop="name">
-              <el-input v-model="ruleForm.name"></el-input>
+              <el-input v-model="ruleForm.name" clearable></el-input>
             </el-form-item>
             <el-form-item label="租户能力" prop="region" style="margin-top:20px;">
-               <el-select v-model="ruleForm.region" collapse-tags multiple>
+               <el-select v-model="ruleForm.region" collapse-tags multiple clearable>
                 <el-option
                   v-for="(item,index) in selec"
                   :key="item.ID"
                   :label="item.abilityName"
                   :value="item.ID"
+
                 ></el-option>
               </el-select>
             </el-form-item>

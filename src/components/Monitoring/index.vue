@@ -8,10 +8,10 @@
             <!-- from表单 -->
             <el-form :inline="true" :model="formInline" class="demo-form-inline">
               <el-form-item label="主机名称" class="right">
-                <el-input v-model="formInline.hostName" placeholder="主机名称"></el-input>
+                <el-input v-model="formInline.hostName" placeholder="主机名称" clearable></el-input>
               </el-form-item>
               <el-form-item label="主机IP" class="right">
-                <el-input v-model="formInline.hostIp" placeholder="主机IP"></el-input>
+                <el-input v-model="formInline.hostIp" placeholder="主机IP" clearable></el-input>
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" @click="onSubmit" class="right">搜索</el-button>
@@ -83,7 +83,7 @@
           <div class="search">
             <el-form :inline="true"  class="demo-form-inline">
               <span class="demonstration">选择组件</span>
-              <el-select v-model="formInline2.compName" placeholder="请选择" class="right">
+              <el-select v-model="formInline2.compName" placeholder="请选择" class="right" clearable>
                 <el-option
                   v-for="item in arrcomponent"
                   :key="item.id"
@@ -92,7 +92,7 @@
                 ></el-option>
               </el-select>
               <span class="demonstration">组件状态</span>
-              <el-select v-model="formInline2.compStatus" placeholder="请选择" class="right">
+              <el-select v-model="formInline2.compStatus" placeholder="请选择" class="right" clearable>
                 <el-option
                   v-for="item in optionss"
                   :key="item.name"
@@ -122,15 +122,15 @@
                 <el-button type="text" @click="getDetail2(scope.row.name)">
                   <i class="icon iconfont icon-chakan" style="font-size:18px; font-weight:bold;"></i>
                 </el-button>
-                 <el-button type="text" @click="getRefresh2(scope.row.name)">
+                <el-button type="text" @click="getRefresh2(scope.row.name)">
                   <i class="el-icon-refresh"  style="font-size:24px; font-weight:bold;"></i>
-                 </el-button>
+                </el-button>
               <el-dialog 
                 width='54%'
                 z-index="99"
-              title="组件监控详情" :visible.sync="dialogTableVisible">
+                title="组件监控详情" :visible.sync="dialogTableVisible">
               <span class="demonstration">组件状态</span>
-              <el-select v-model="compStatus" placeholder="请选择" class="right">
+              <el-select v-model="compStatus" placeholder="请选择" class="right" clearable>
                 <el-option
                   v-for="item in optionss"
                   :key="item.name"
@@ -138,7 +138,7 @@
                   :value="item.value"
                 ></el-option>
               </el-select>
-              <el-button type="primary" class="right">搜索</el-button>
+              <el-button type="primary" class="right" @click="detail2Search()">搜索</el-button>
               <el-table :data="gridData">
                 <el-table-column property="hostIp" label="组件IP" width="100"></el-table-column>
                 <el-table-column property="port" label="组件端口" width="100"></el-table-column>
@@ -166,7 +166,7 @@
                 <el-input v-model="formInline.name" placeholder="主机名称"></el-input>
               </el-form-item> -->
               <span class="demonstration">选择能力</span>
-              <el-select v-model="formInLine3.name" placeholder="请选择" class="right">
+              <el-select v-model="formInLine3.name" placeholder="请选择" class="right" clearable>
                 <el-option
                   v-for="item in arr"
                   :key="item.id"
@@ -175,7 +175,7 @@
                 ></el-option>
               </el-select>
             <span class="demonstration">能力状态</span>
-              <el-select v-model="formInLine3.status" filterable placeholder="请选择" class="right">
+              <el-select v-model="formInLine3.status" filterable placeholder="请选择" class="right" clearable>
                 <el-option
                   v-for="item in option2"
                   :key="item.value"
@@ -345,11 +345,11 @@ export default {
       abilityStatus:"",  //能力状态
       customColor: "#409eff",
       customColors: [
-        { color: "#f56c6c", percentage: 65 },
-        { color: "#e6a23c", percentage: 70 },
-        { color: "#5cb87a", percentage: 75 },
-        { color: "#1989fa", percentage: 80 },
-        { color: "#6f7ad3", percentage: 100 }
+        // { color: "#f56c6c", percentage: 65 },
+        // { color: "#e6a23c", percentage: 70 },
+        // { color: "#5cb87a", percentage: 75 },
+        // { color: "#1989fa", percentage: 80 },
+        // { color: "#6f7ad3", percentage: 100 }
       ],
       pickerOptions: {
         shortcuts: [
@@ -444,7 +444,8 @@ export default {
       ramOptions: {
         xAxis: [],
         series: [],
-      }
+      },
+      tab2DetailName: ''
     };
   },
   methods: {
@@ -479,6 +480,14 @@ export default {
       ctx.textAlign = 'center';
       ctx.fillText(`${x.toFixed(2)}%`, 50, 50);
     },
+    //选项卡二详情的搜索
+    detail2Search() {
+      this.getDetail2(this.tab2DetailName,this.compStatus) 
+      this.compStatus = ''
+    },
+
+
+
     //选项卡三的刷新
     getRefresh() {
       this.$axios.post('/oms-basic/webappInfo!list.json').then(res =>{
@@ -532,7 +541,7 @@ export default {
     //选项卡三的搜索功能
     onSubmit3() {
       let {name, status} = this.formInLine3;
-      if(!(name || /[0|1]/.test(status)))return;
+      // if(!(name || /[0|1]/.test(status)))return;
       let formData = {};
       name && (formData.name = name);
       if(status === 0){
@@ -579,9 +588,9 @@ export default {
     },
     //调取选项卡一(主机监控)搜索接口
     onSubmit() {
-      if (!(this.formInline.hostName || this.formInline.hostIp)) {
-        return;
-      }
+      // if (!(this.formInline.hostName || this.formInline.hostIp)) {
+      //   return;
+      // }
       let formData = {};
       if (this.formInline.hostName) {
         formData.hostName = this.formInline.hostName;
@@ -592,7 +601,9 @@ export default {
       this.$axios
         .post("/oms-basic/hardWareInfo!list.json", this.$qs.stringify(formData))
         .then(res => {
+          console.log(res,'res--------res')
           this.tableData = res.data.list;
+          this.total = res.data.count;
         })
         .catch(error => {
           console.log(error);
@@ -622,7 +633,7 @@ export default {
     //选项卡二的搜索功能
      onSubmit2() {
       let {compName, compStatus} = this.formInline2;
-      if(!(compName || /[0|1]/.test(compStatus)))return;
+      // if(!(compName || /[0|1]/.test(compStatus)))return;
       let formData = {};
       compName && (formData.name = compName);
       if(compStatus === 0){
@@ -649,14 +660,16 @@ export default {
         })
       });
     },
-    //选项二的详情
-    getDetail2(name) {
+    // getDetail2(this.tab2DetailName,this.searchData);
+    //选项卡二的详情
+    getDetail2(name,status='') {  //status 传一个默认空字符，没有就是空，有就是你传入的值
       this.dialogTableVisible = true;
-      this.$axios.post('/oms-basic/softWareInfo!getSoftWareInfoListByName.json',this.$qs.stringify({name}))
+      this.$axios.post('/oms-basic/softWareInfo!getSoftWareInfoListByName.json',this.$qs.stringify({name,status}))
       .then(res => {
         // console.log(res,'res')
         if(res.data.code === '10000'){
-          this.gridData = res.data.list;
+          this.tab2DetailName = name;  //把name的值在全局保存到tab2DetailName身上。
+          this.gridData = res.data.list;  //把请求返回来的数据res.data.list复制给全局定义的gridData。绑定到弹框的table中去。
         }
       }).catch(error =>console.log("getDetail2_error",error));
     },
@@ -681,15 +694,23 @@ export default {
         if(tab.$props.name === 'second'){
           this.tabPan = 'second';
           this.selectComponent({});
-          this.getComponent({start: this.pagination.currentPage,pageSize: this.pagination.pageSize});
+          this.getComponent({start: this.
+          pagination.currentPage,pageSize: this.pagination.pageSize});
+          this.formInline2.compName = '';
+          this.formInline2.compStatus = '';
+          //------------------------------------------------------------------
         }else if(tab.$props.name === 'third'){
           this.tabPan = 'third';
           this.select({});  //调取选项卡三下拉框选择能力接口
           this.getAbility({start: this.pagination.currentPage,pageSize: this.pagination.pageSize})
+          this.formInLine3.name = '';
+          this.formInLine3.status = '';
         }else if(tab.$props.name === 'first'){
           this.tabPan = 'first';        
           this.getMessage(); //调取table表格数据接口
           this.getcomponentName();
+          this.formInline.hostName = '';
+          this.formInline.hostIp = '';
         }
       })
     },

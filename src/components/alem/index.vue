@@ -96,12 +96,12 @@
           <div class="block">
             <el-pagination
               @current-change="handleCurrentChange"
-              :current-page.sync="pagination.start"
-              :page-size="pagination.pageSize"
+              :current-page.sync="pagination2.start"
+              :page-size="pagination2.pageSize"
               :prev-click="prev"
               :next-click="next"
               layout="total, prev, pager, next"
-              :total="pagination.total"
+              :total="pagination2.total"
             ></el-pagination>
           </div>
           <el-dialog class="tanCheng" title="联系人" :visible.sync="dialogDetailsVisible" width="50%">
@@ -116,6 +116,7 @@
             </div>
           </el-dialog>
         </el-tab-pane>
+        
         <el-tab-pane label="告警配置管理" name="second">
           <div class="search">
             <el-form :inline="true" :model="formInline" class="demo-form-inline">
@@ -205,6 +206,7 @@
               </template>
             </el-table-column>
           </el-table>
+          
           <div class="block">
             <el-pagination
               @current-change="handleCurrentChange"
@@ -305,7 +307,12 @@ export default {
       title1: "",
       pagination: {
         start: 1, //从第一页开始
-        pageSize: 10, //每一页展示6条数据
+        pageSize: 10,
+        total: 0
+      }, // 分页配置
+      pagination2: {
+        start: 1, //从第一页开始
+        pageSize: 10,
         total: 0
       }, // 分页配置
       dialogAddgsVisible: false,
@@ -382,12 +389,13 @@ export default {
       });
       // console.log(this.pagination.start)  //点击第几页
     },
+    
     //数据展示(告警列表)
     listInt(arr) {
       this.$axios.post("/oms-basic/warnInfoRelate!list.json",this.$qs.stringify(arr)).then(res => {
         console.log(res, "告警列表");
         this.tableData = res.data.list;
-        this.paginatio.total = res.data.count;
+        this.pagination2.total = res.data.count;
 
         if (this.tableData.warnStatus == 2) {
           this.tableData.warnStatus = "待处理";
@@ -399,6 +407,7 @@ export default {
       this.$axios.post("/oms-basic/emergencyContact!list.json").then(res => {
         console.log(res.data.list, "联系人列表");
         this.tableDatas = res.data.list;
+        this.pagination.total = res.data.count
       });
     },
     // 告警搜索

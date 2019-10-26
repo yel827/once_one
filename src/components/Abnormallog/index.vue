@@ -44,7 +44,7 @@
       class="tabP"
     >
       <template v-for="(item, index) in tableLabel">
-        <el-table-column :key="index" :prop="item.prop" :label="item.label" width></el-table-column>
+        <el-table-column show-overflow-tooltip :key="index" :prop="item.prop" :label="item.label" width></el-table-column>
       </template>
       <el-table-column label="操作">
         <template slot-scope="scope">

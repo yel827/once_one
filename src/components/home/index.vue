@@ -3,7 +3,14 @@
     <div class="titleQ">租户管理</div>
     <!-- 头部结构 -->
     <div class="search">
-      <el-form :inline="true" :model="formInline" class="demo-form-inline">
+      <el-form
+        :inline="true"
+        :model="ruleForm"
+        :rules="rules"
+        ref="ruleForm"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
         <el-form-item label="租户名称">
           <el-input v-model="tableDataName" placeholder="租户名称"></el-input>
         </el-form-item>
@@ -15,13 +22,11 @@
           <el-button @click="dialogVisible = true">+ 添加租户</el-button>
           <!--  -->
           <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
-            <el-row>
-              租户名称
-              <el-input v-model="productName" style="width: 70%;margin: 10px 0 10px 0"></el-input>
-            </el-row>
-            <el-row>
-              授权能力
-              <el-select v-model="value_one" placeholder="请选择" collapse-tags multiple>
+            <el-form-item label="租户名称" prop="name">
+              <el-input v-model="ruleForm.name"></el-input>
+            </el-form-item>
+            <el-form-item label="租户能力" prop="region" style="margin-top:20px;">
+               <el-select v-model="ruleForm.region" collapse-tags multiple>
                 <el-option
                   v-for="(item,index) in selec"
                   :key="item.ID"
@@ -29,10 +34,10 @@
                   :value="item.ID"
                 ></el-option>
               </el-select>
-            </el-row>
+            </el-form-item>
             <div slot="footer" class="dialog-footer">
               <el-button @click="dialogVisible = false">取 消</el-button>
-              <el-button type="primary" @click="addData">确 定</el-button>
+              <el-button type="primary" @click="addData('ruleForm')">确 定</el-button>
             </div>
           </el-dialog>
           <!--  -->
@@ -168,6 +173,16 @@ export default {
       productNameb: "",
       productDescriptionb: "",
       _index: "",
+      ruleForm: {
+        name: "",
+        region: "",
+        date1: "",
+        date2: "",
+        delivery: false,
+        type: [],
+        resource: "",
+        desc: ""
+      },
       form: {
         name: "",
         abilityId: [],
@@ -191,7 +206,7 @@ export default {
       },
       pagination: {
         start: 1, //从第一页开始
-        pageSize:10, //每一页展示6条数据
+        pageSize: 10, //每一页展示6条数据
         total: 0
       }, // 分页配置
       //点击编辑时的data
@@ -214,8 +229,12 @@ export default {
       rules: {
         name: [
           { required: true, message: "请输入名称" },
-          { min: 2, max: 10, message: "SSSSSSS", trigger: "blur" }
+          { min: 2, max: 10, message: "名称必须是两个到十个字符", trigger: "blur" }
         ],
+        region: [
+            { required: true, message: '请选择能力', trigger: 'change' }
+            
+          ],
         sort: [{ type: "number", message: "11233552", trigger: "blur" }]
       },
       //搜索功能需要的data
@@ -250,29 +269,26 @@ export default {
         });
     },
     //添加
-    addData() {
+    addData(formName) {
       //显示弹窗
+      if (this.ruleForm.region == "" || this.ruleForm.name == "") {
+        return;
+      }
       var that = this;
       that.dialogVisible = false;
-      //调取添加接口
-      // let header = {
-      //   headers: {
-      //     "Content-Type": "application/x-www-form-urlencoded"
-      //   }
-      // };
-      //1.
       var arr_shu = [];
-      arr_shu.push(that.value_one);
+      arr_shu.push(this.ruleForm.region);
       var paramso = arr_shu.join(",");
       var params = new URLSearchParams();
-      params.append("tenantName", that.productName);
+      params.append("tenantName", that.ruleForm.name);
       params.append("abilityIDs", paramso);
       //2. that.$qs.stringify(params1)
 
       var params1 = {
-        tenantName: that.productName,
+        tenantName: that.ruleForm.name,
         abilityIDs: paramso
       };
+
       that.$axios
         .post("/oms-basic/tenant!addTenant.json", that.$qs.stringify(params1))
         //成功
@@ -281,7 +297,7 @@ export default {
           console.log("res777", res);
           //自己定义的空数组tableData
           // this.tableData.splice(0, this.tableData.length)
-          var arrs = { tenantName: that.productName, abilityIDs: paramso };
+          var arrs = { tenantName: that.ruleForm.name, abilityIDs: paramso };
           that.tableData.splice(that.tableData.length, 0, arrs);
           //发送ajax请求获取数据
 
@@ -295,6 +311,13 @@ export default {
               this.tableData = [].concat(res.data.data);
               // console.log(this.tableData, "this.tableData");
             });
+           
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            alert('添加成功!');
+          }
+        });
+      
         })
         //失败
         .catch(error => {
@@ -407,7 +430,8 @@ export default {
       this.listInit({
         start: currentPage,
         pageSize: this.pagination.pageSize,
-        ...this.formData
+        tenantName: this.tableDataName
+        // ...this.formData
       });
       // console.log(this.pagination.start)  //点击第几页
     },
@@ -499,7 +523,6 @@ export default {
         });
     },
     listInit(arr) {
-      
       this.$axios
         .post("/oms-basic/tenant!selectTenantBy.json", this.$qs.stringify(arr))
         .then(res => {

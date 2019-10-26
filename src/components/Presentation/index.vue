@@ -1,6 +1,7 @@
 <template>
   <div class="home">
     <div class="titleQ">监控报告</div>
+    <!-- <el-tabs v-model="activeName" @tab-click="handleClick"> -->
     <div class="search">
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <span class="demonstration">资源类型</span>
@@ -32,11 +33,30 @@
           range-separator="至"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          :picker-options="pickerOptions"
         ></el-date-picker>
         <el-form-item>
           <el-button type="primary" @click="onSubmit" class="right">搜索</el-button>
-          <el-button type="primary" @click="suo" class="right">生成报告</el-button>
+          <el-button type="primary" @click="dialogVisible = true" class="right">生成报告</el-button>
+          <!-- 0 -->
+          <el-dialog title="提示" :visible.sync="dialogVisible" class="onace" width="30%">
+            <el-row>
+              资源类型
+              <el-input v-model="edfrom_.name" style="width: 70%;margin: 10px 0 10px 0"></el-input>
+            </el-row>
+            <el-row>
+              报告开始时间
+              <el-date-picker v-model="edfrom_.createtime" type="date" placeholder="选择日期"></el-date-picker>
+            </el-row>
+            <el-row style="margin-top:20px;">
+              报告结束时间
+              <el-date-picker v-model="edfrom_.endtime" type="date" placeholder="选择日期"></el-date-picker>
+            </el-row>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogVisible = false">取 消</el-button>
+              <el-button type="primary" @click="sou">确 定</el-button>
+            </div>
+          </el-dialog>
+          <!-- 0 -->
         </el-form-item>
       </el-form>
     </div>
@@ -62,12 +82,13 @@
     </el-table>
     <div class="block">
       <el-pagination
-        @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page.sync="currentPage1"
-        :page-size="10"
+        :current-page.sync="pagination.start"
+        :page-size="pagination.pageSize"
+        :prev-click="prev"
+        :next-click="next"
         layout="total, prev, pager, next"
-        :total="total"
+        :total="pagination.total"
       ></el-pagination>
     </div>
   </div>
@@ -79,40 +100,24 @@ export default {
     return {
       currentPage: 1, //初始页
       pagesize: 10, //每页的数据
-      pickerOptions: {
-        shortcuts: [
-          {
-            onClick(picker) {
-              const end = new Date();
-              const start = new Date();
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-              picker.$emit("pick", [start, end]);
-            }
-          },
-          {
-            onClick(picker) {
-              const end = new Date();
-              const start = new Date();
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
-              picker.$emit("pick", [start, end]);
-            }
-          },
-          {
-            onClick(picker) {
-              const end = new Date();
-              const start = new Date();
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-              picker.$emit("pick", [start, end]);
-            }
-          }
-        ]
+      dialogVisible: false,
+      edfrom_: {
+        name: "",
+        createtime: "",
+        endtime: ""
       },
+      pagination: {
+        start: 1, //从第一页开始
+        pageSize:10, //每一页展示6条数据
+        total: 0
+      }, // 分页配置
       value1: "",
       value2: "",
       formInline: {
         user: "",
         name: "",
-        region: ""
+        region: "",
+        values:''
       },
       addForm: {
         name: "",
@@ -173,35 +178,21 @@ export default {
         sort: [{ type: "number", message: "11233552", trigger: "blur" }]
       },
       tableData: [],
-      ta:[],
-      listmy:[],
-      start_:'',
-      end_:''
+      ta: [],
+      listmy: [],
+      start_: "",
+      end_: ""
     };
   },
   methods: {
     //数据展示
-    getss() {
-      this.$axios.post("/oms-basic/report!list.json").then(res => {
+    getss(arr) {
+      this.$axios.post("/oms-basic/report!list.json",this.$qs.stringify(arr)).then(res => {
         console.log(res.data.list, "监控报告");
         this.tableData = res.data.list;
-        this.total = res.data.count;
-       this.start_ = this.tableData.typeName
-        console.log(this.start_,'开始时间')
-        console.log(this.end_,'结束时间')
-        // var arrs = []
-        // for(var i=0; i<this.tableData.typeName.length; i++){
-        //   for(var j=i+1; j<this.tableData.typeName.length; j++){
-        //     if(arrs[i].indexOf(this.tableData.typeName[i])==-1){
-        //       this.arrs.push(this.tableData.typeName[i])
-        //     }
-        //   }
-        // }
-        // this.ta = arrs
-        // console.log(this.ta,'this.ta')
+        this.pagination.total = res.data.count;
       });
     },
-
     //////
     open(index) {
       this.$confirm("此操作将下载该数据, 是否继续?", "提示", {
@@ -211,14 +202,8 @@ export default {
         center: true
       })
         .then(() => {
-          // var dataL={
-          //   fileName:index
-          // }
-          // this.$axios.get('/oms-basic/downloadSystemReportFile.json',this.$qs.stringify(dataL))
-          // .then(res=>{
-          //   console.log(res,"下载")
-          // })
-          window.location.href="/oms-basic/downloadSystemReportFile.json?fileName="+index
+          window.location.href =
+            "/oms-basic/downloadSystemReportFile.json?fileName=" + index;
           this.$message({
             type: "success",
             message: ""
@@ -248,8 +233,17 @@ export default {
       console.log(this.pagesize); //每页下拉显示数据
     },
     handleCurrentChange: function(currentPage) {
-      this.currentPage = currentPage;
-      // console.log(this.currentPage)  //点击第几页
+      // this.pagination.start = currentPage;
+      console.log(currentPage)
+      console.log(...this.formData,'oppp')
+      
+      this.getss({
+        start: currentPage,
+        pageSize: this.pagination.pageSize,
+        typeName:this.values
+        // ...this.formData
+      });
+       console.log(...this.formData,'oppp')  //点击第几页
     },
     deleteRow1(index) {
       this.tableData.forEach((item, index) => {});
@@ -319,14 +313,10 @@ export default {
       }
       console.log(formData, "传递的值");
       this.$axios
-        .post(
-          "/oms-basic/report!list.json",
-          this.$qs.stringify(formData)
-        )
+        .post("/oms-basic/report!list.json", this.$qs.stringify(formData))
         .then(res => {
           this.tableData = res.data.list;
-          
-          
+          this.pagination.total = res.data.count;
           console.log(res, "search");
         })
         .catch(err => {});
@@ -337,23 +327,28 @@ export default {
       this.dialogDetailsVisible = true;
       this.detailForm = row;
     },
-    suo(){
-      var dataList={
-        reportStartTime:'2017-01-01 00:00:00',
-        reportEndTime:'2019-10-24 00:00:00',
-        typeName:'服务'
-      }
-      console.log(dataList)
-      this.$axios.post('/oms-basic/report!createReportExcel.json',this.$qs.stringify(dataList))
-      .then(res=>{
-        console.log(res,'生成报告')
-      })
+    sou() {
+      var that = this;
+      this.dialogVisible = false;
+      var dataList = {
+        reportStartTime: this.edfrom_.createtime,
+        reportEndTime: this.edfrom_.endtime,
+        typeName: this.edfrom_.name
+      };
+      console.log(dataList);
+      this.$axios
+        .post(
+          "/oms-basic/report!createReportExcel.json",
+          this.$qs.stringify(dataList)
+        )
+        .then(res => {
+          console.log(res, "生成报告");
+          this.getss()
+        });
     }
-   
   },
   mounted() {
     this.getss();
-
   }
 };
 </script>
